@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlaybookRAG: answers from a sales playbook, with the retrieval shown</title>
+<meta name="description" content="Retrieval-augmented question answering over a RevOps playbook. See the chunks, the similarity scores, the relevance guard and a retrieval evaluation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230F6E61'/><rect x='8' y='8' width='16' height='4' rx='1' fill='white'/><rect x='8' y='14' width='16' height='4' rx='1' fill='white' opacity='.7'/><rect x='8' y='20' width='10' height='4' rx='1' fill='white' opacity='.45'/></svg>">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <h1>PlaybookRAG</h1>
+    <p>Ask the sales playbook a question. Every answer shows which passages it came from, how they were cut and how closely they matched.</p>
+  </div>
+  <div class="modes" id="modes" aria-live="polite"></div>
+  <a class="gh" href="https://github.com/Developershubh00/playbook-rag" target="_blank" rel="noopener">Source on GitHub</a>
+</header>
+
+<main class="layout">
+  <section class="col ask-col">
+    <form id="askForm" class="ask">
+      <label for="q" class="sr">Question</label>
+      <input id="q" name="q" autocomplete="off" placeholder="Who can approve a 15 percent discount?">
+      <button type="submit" id="askBtn">Ask</button>
+    </form>
+    <div class="samples" id="samples" role="group" aria-label="Example questions"></div>
+
+    <div id="answer" class="answer" aria-live="polite">
+      <p class="empty">Pick an example above. Try the Dubai question too: it shows where word-matching embeddings miss a place the playbook calls "the GCC".</p>
+    </div>
+
+    <section id="passages" class="passages" hidden>
+      <h2>Retrieved passages</h2>
+      <p class="hint" id="timing"></p>
+      <ol id="passageList"></ol>
+    </section>
+  </section>
+
+  <section class="col side-col">
+    <fieldset class="settings" id="settings">
+      <legend>Retrieval settings</legend>
+      <div class="seg" role="radiogroup" aria-label="Chunking strategy">
+        <label><input type="radio" name="strategy" value="structure" checked><span>By section</span></label>
+        <label><input type="radio" name="strategy" value="fixed"><span>Fixed window</span></label>
+      </div>
+      <div class="sliders">
+        <label><span>Chunk size <output id="sizeOut">80</output> words</span><input type="range" name="size" min="30" max="200" step="10" value="80"></label>
+        <label id="overlapLabel"><span>Overlap <output id="overlapOut">20</output> words</span><input type="range" name="overlap" min="0" max="60" step="5" value="20"></label>
+        <label><span>Passages retrieved <output id="topKOut">3</output></span><input type="range" name="topK" min="1" max="6" step="1" value="3"></label>
+      </div>
+      <label class="check"><input type="checkbox" name="mmr" checked> Reduce near-duplicate passages (MMR)</label>
+    </fieldset>
+
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" aria-controls="tab-chunks" id="t-chunks">How the document is chunked</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-eval" id="t-eval">Measure retrieval</button>
+    </div>
+
+    <section id="tab-chunks" role="tabpanel" aria-labelledby="t-chunks" class="tabpanel">
+      <div class="doc-head">
+        <label for="docSel" class="sr">Document</label>
+        <select id="docSel"></select>
+        <span class="hint" id="chunkCount"></span>
+      </div>
+      <ul class="key" aria-label="Key">
+        <li><span class="sw a"></span>One chunk</li>
+        <li><span class="sw b"></span>Next chunk</li>
+        <li><span class="sw o"></span>Overlap</li>
+        <li><span class="sw h"></span>Retrieved for your question</li>
+      </ul>
+      <div id="docView" class="doc"></div>
+    </section>
+
+    <section id="tab-eval" role="tabpanel" aria-labelledby="t-eval" class="tabpanel" hidden>
+      <p>Twelve questions with a known answer location are run through both chunking strategies using the settings above. <b>Hit@k</b> counts questions whose correct section appears in the top k passages. <b>MRR</b> is 1 when it is ranked first, 0.5 when second, and so on, averaged.</p>
+      <button type="button" id="evalBtn" class="secondary">Run evaluation</button>
+      <div id="evalOut"></div>
+    </section>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>The playbook belongs to a fictional company and was written for this demo. Questions are not stored.</p>
+</footer>
+<script src="/app.js" type="module"></script>
+</body>
+</html>

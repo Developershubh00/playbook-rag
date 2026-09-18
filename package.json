@@ -1,0 +1,12 @@
+{
+  "name": "playbook-rag",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Retrieval-augmented answers over a sales playbook, with inspectable chunking, embeddings, vector search, MMR, a relevance guard and a retrieval evaluation.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node dev-server.js",
+    "test": "node --test test/*.test.js"
+  }
+}
